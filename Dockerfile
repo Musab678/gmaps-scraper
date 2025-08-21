@@ -1,6 +1,7 @@
+# Use python:3.11-slim as a base image
 FROM python:3.11-slim
 
-# System deps for Playwright/Chromium
+# Install system dependencies needed by Playwright
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
     libxkbcommon0 libgbm1 libasound2 libxshmfence1 libx11-6 libxcomposite1 \
@@ -11,19 +12,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Install Python deps first for better layer caching
+# Copy requirement spec first (for better layer caching)
 COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright browsers (Chromium) + OS deps
+# Install Playwright browsers (Chromium) + deps
 RUN python -m playwright install --with-deps chromium
 
-# Copy app source
+# Copy the app source
 COPY app.py /app/app.py
 
+# Environment settings
 ENV PYTHONUNBUFFERED=1
 ENV PORT=7860
 
 EXPOSE 7860
 
 CMD ["python", "app.py"]
+
