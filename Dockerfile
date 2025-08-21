@@ -1,32 +1,20 @@
-# Use python:3.11-slim as a base image
-FROM python:3.11-slim
+# Use official Playwright image (already includes all dependencies)
+FROM mcr.microsoft.com/playwright/python:v1.54.0-focal
 
-# Install system dependencies needed by Playwright
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
-    libxkbcommon0 libgbm1 libasound2 libxshmfence1 libx11-6 libxcomposite1 \
-    libxdamage1 libxfixes3 libxrandr2 libgtk-3-0 libpango-1.0-0 \
-    libpangocairo-1.0-0 libcairo2 fonts-liberation \
-    wget unzip curl ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
+# Set working directory
 WORKDIR /app
 
-# Copy requirement spec first (for better layer caching)
-COPY requirements.txt /app/requirements.txt
+# Copy requirements
+COPY requirements.txt .
+
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright browsers (Chromium) + deps
-RUN python -m playwright install --with-deps chromium
+# Copy your code
+COPY . .
 
-# Copy the app source
-COPY app.py /app/app.py
+# Install Chromium (fonts are already included in this image)
+RUN playwright install chromium
 
-# Environment settings
-ENV PYTHONUNBUFFERED=1
-ENV PORT=7860
-
-EXPOSE 7860
-
-CMD ["python", "app.py"]
-
+# Default command (adjust script name if different)
+CMD ["python", "main.py", "-s", "restaurants in Karachi", "-t", "100"]
