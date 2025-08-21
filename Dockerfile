@@ -1,20 +1,17 @@
-# Use official Playwright image (already includes all dependencies)
-FROM mcr.microsoft.com/playwright/python:v1.54.0-focal
+FROM python:3.10-slim
 
-# Set working directory
 WORKDIR /app
 
-# Copy requirements
 COPY requirements.txt .
 
-# Install Python dependencies
+RUN apt-get update && \
+    apt-get install -y wget gnupg ca-certificates fonts-liberation fonts-unifont libnss3 libatk1.0-0 \
+    libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 \
+    libxrandr2 libgbm1 libpango-1.0-0 libpangocairo-1.0-0 libcairo2 libasound2 libatspi2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy your code
 COPY . .
 
-# Install Chromium (fonts are already included in this image)
 RUN playwright install chromium
-
-# Default command (adjust script name if different)
-CMD ["python", "main.py", "-s", "restaurants in Karachi", "-t", "100"]
